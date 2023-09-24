@@ -8,6 +8,9 @@ export const AppDataSource = new DataSource({
     synchronize: true,
     logging: false,
     entities: [User],
-    migrations: [],
-    subscribers: [],
+
 })
+
+AppDataSource.initialize().then(async () => {
+    console.log("Data Source has been initialized!")
+}).catch(error => console.log(error))

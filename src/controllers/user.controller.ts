@@ -1,10 +1,19 @@
-import express, {Request,Response} from "express";
+import express, {Request,Response,NextFunction} from "express";
 import { Manager } from "../utils/Manager";
 import { respone,errorRespone } from "../utils/Response";
 import { User } from "../entity/User";
 import { ObjectId } from "mongodb";
 import bcrypt from "bcrypt";
 import Joi from "joi";
+
+
+async function checkEmail(email: string) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const user = await Manager.findOneBy(User, { email: email });
+    if (user) return res.status(404).json(errorRespone(`Email ${email} already exist`));
+    next();
+  };
+}
 
 export const getAllUsers = async (req:Request,res:Response) => {
   try {
@@ -48,43 +57,45 @@ export const deleteUserById = async(req:Request,res:Response) => {
   }
 }
 
-export const register = async (req:Request,res:Response) => {
-    const { nama, email, password, confPassword, role } = req.body;
-    const schema = Joi.object({
-            email: Joi.string().email().required(),
-            nama: Joi.string().required(),
-            password: Joi.string().min(3).required(),
-            confPassword: Joi.string().valid(Joi.ref('password')).required(),
-            role: Joi.string().required()
-            
-        });
+export const register = async (req: Request, res: Response) => {
+  const { nama, email, password, confPassword, role } = req.body;
 
-        const { error } = schema.validate(req.body);
-        if (error) return res.status(400).json(errorRespone(error.details[0].message));
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+    nama: Joi.string().required(),
+    password: Joi.string().min(3).required(),
+    confPassword: Joi.string().valid(Joi.ref('password')).required(),
+    role: Joi.string().required(),
+  });
 
-        // check if user exist
-        const userExist = await Manager.findOneBy(User, {email : email});
-        if(userExist) return res.status(400).json(errorRespone(`User with email ${email} already exist`));
+  const { error } = schema.validate(req.body);
+  if (error) return res.status(400).json(errorRespone(error.details[0].message));
 
-        // check match password
-        if(confPassword !== password) return res.status(400).json(errorRespone("Password does not match"))
-        const salt = await bcrypt.genSalt();
-        const encryptPassword = await bcrypt.hash(password, salt);
-        
-        const user = new User({
-            email : email,
-            nama : nama,
-            password : encryptPassword,
-            role : role,
-            is_verified: false,
-            createdAt: new Date(),
-            updatedAt : new Date(),
-        })
+  // Panggil middleware checkEmail
+  await (await checkEmail(email))(req, res, async () => {
 
-        try {
-          await Manager.save(User,user);
-          res.status(201).json(respone("Success register",user));
-        } catch (error) {
-          if(error) return res.status(500).json(errorRespone(error.message))
-        }
-}
+    // check match password
+    if (confPassword !== password)
+      return res.status(400).json(errorRespone('Password does not match'));
+
+    const salt = await bcrypt.genSalt();
+    const encryptPassword = await bcrypt.hash(password, salt);
+
+    const user = new User({
+      email: email,
+      nama: nama,
+      password: encryptPassword,
+      role: role,
+      is_verified: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    try {
+      await Manager.save(User, user);
+      res.status(201).json(respone('Success register', user));
+    } catch (error) {
+      if (error) return res.status(500).json(errorRespone(error.message));
+    }
+  });
+};
