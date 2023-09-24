@@ -4,15 +4,35 @@ import { Entity, ObjectIdColumn, ObjectId, Column } from "typeorm"
 export class User {
 
     @ObjectIdColumn()
-    id: ObjectId
+    _id: ObjectId
+    
+    @Column()
+    email: string;
 
     @Column()
-    firstName: string
+    nama: string;
 
     @Column()
-    lastName: string
+    password: string;
 
     @Column()
-    age: number
+    role: string;
+
+    @Column()
+    is_verified: boolean;
+
+    @Column('text')
+    refresh_token?: string;
+
+    @Column()
+    createdAt: Date;
+
+    @Column()
+    updatedAt: Date;
+
+
+    constructor(data: Partial<User>){
+        Object.assign(this,data)
+    }
 
 }
