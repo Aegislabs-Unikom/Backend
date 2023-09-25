@@ -6,6 +6,7 @@ import cors from "cors";
 import routes from "../routes"
 import session from 'express-session';
 import http from "http";
+import { AppDataSource } from "../data-source";
 dotenv.config();
 
 const app = express();
@@ -23,8 +24,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+AppDataSource.initialize().then(async () => {
+  app.use(routes);
+}).catch(error => console.log(error))
 
-app.use(routes);
+
+
+
 
 export default server;
 
