@@ -1,10 +1,12 @@
-import express, {Request,Response,NextFunction} from "express";
+import {Request,Response,NextFunction} from "express";
 import { Manager } from "../utils/Manager";
 import { respone,errorRespone } from "../utils/Response";
 import { User } from "../entity/User";
 import { ObjectId } from "mongodb";
 import bcrypt from "bcrypt";
 import Joi from "joi";
+import { accessTokenSign,refreshTokenSign } from "../config/jwt";
+import { sendOTPVerificationEmail } from "./otp.controller";
 
 
 async function checkEmail(email: string) {
@@ -93,9 +95,51 @@ export const register = async (req: Request, res: Response) => {
 
     try {
       await Manager.save(User, user);
-      res.status(201).json(respone('Success register', user));
+        let data = {
+                id: user._id,
+                email: user.email,
+                };
+
+      await sendOTPVerificationEmail(data,req,res);
     } catch (error) {
       if (error) return res.status(500).json(errorRespone(error.message));
     }
   });
 };
+
+export const login = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+  
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(3).required(),
+  });
+  const { error } = schema.validate(req.body);
+  if (error) return res.status(400).json(errorRespone(error.details[0].message));
+
+  const user = await Manager.findOneBy(User,{email : email});
+
+  if(!user) return res.status(404).json(errorRespone(`User with email ${email} not found`));
+  if(user.is_verified === false ) return res.status(404).json(errorRespone(`User with email ${email} not verified`));
+
+  const checkPassword = await bcrypt.compare(password, user.password)
+  if(!checkPassword) return res.status(400).json({msg : "Password not match"})
+
+  const payload = {user_id : user._id, email : user.email, nama: user.nama, role: user.role};
+  const accessToken = accessTokenSign(payload, "30m");
+  const refreshToken = refreshTokenSign(payload,"1d");
+
+  try {
+    await Manager.update(User, {_id : user._id}, {refresh_token : refreshToken})
+    res.cookie("refresh_token", refreshToken, {
+       httpOnly : true,
+       maxAge : 24 * 60 * 60 * 1000
+    })
+    req.session['user_id'] = user._id;
+
+    res.status(200).json(respone("Success login", { accessToken, user }));
+   
+  } catch (error) {
+    if(error) return res.status(500).json(errorRespone(error.message))
+  }
+}
