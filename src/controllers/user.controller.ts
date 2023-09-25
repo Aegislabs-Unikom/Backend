@@ -18,12 +18,18 @@ async function checkEmail(email: string) {
 }
 
 export const getAllUsers = async (req:Request,res:Response) => {
+  
   try {
-    const users = await Manager.find(User, {
-        select : ["_id","email","nama","role","is_verified"]
-       });
-    if(!users) return res.status(404).json(errorRespone("Users not found"))
-    res.status(200).json(respone("Success get all users",users));
+    if(req.role === "Admin"){
+      const users = await Manager.find(User, {
+      select : ["_id","email","nama","role","is_verified"]
+        });
+      if(!users) return res.status(404).json(errorRespone("Users not found"))
+      res.status(200).json(respone("Success get all users",users));
+    } else {
+      return res.status(401).json(errorRespone("You are not authorized to access this feature"))
+    }
+   
   } catch (error) {
     if(error) return res.status(500).json(errorRespone(error.message))
   }
@@ -137,9 +143,31 @@ export const login = async (req: Request, res: Response) => {
     })
     req.session['user_id'] = user._id;
 
-    res.status(200).json(respone("Success login", { accessToken, user }));
+    const loginUser = {
+      email : user.email,
+      nama : user.nama,
+      role : user.role,
+      is_verified : user.is_verified
+    }
+
+    res.status(200).json(respone("Success login", { accessToken, user : loginUser }));
    
   } catch (error) {
     if(error) return res.status(500).json(errorRespone(error.message))
   }
+}
+
+export const logout = async(req: Request, res: Response) => {
+  const session_user_id = req.session['user_id']
+  if(!session_user_id) return res.status(401).json(errorRespone(`Login first to logout`))
+
+  try {
+    await Manager.update(User, {_id : new ObjectId(session_user_id)}, {refresh_token : ""})
+    res.clearCookie("refresh_token");
+    req.session.destroy((err) => err ? console.error("Error destroying session:", err) : console.log("Session has been destroyed."));
+    res.status(200).json(respone("Success logout",{}));
+  } catch (error) {
+    if(error) return res.status(500).json(errorRespone(error.message))
+  }
+
 }
