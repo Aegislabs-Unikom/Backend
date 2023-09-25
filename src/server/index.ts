@@ -10,13 +10,7 @@ dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-app.use(cors({
-  origin: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With', 'X-Access-Token', 'X-Key', 'Cookies', 'Cache-Control', 'Set-Cookie'],
-  credentials: true
-}
-));
+app.use(cors());
 app.use(helmet({
   crossOriginResourcePolicy: false,
 }));
