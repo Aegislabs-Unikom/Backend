@@ -6,7 +6,6 @@ import cors from "cors";
 import routes from "../routes"
 import session from 'express-session';
 import http from "http";
-import { AppDataSource } from "../data-source";
 dotenv.config();
 
 const app = express();
@@ -23,10 +22,8 @@ app.use(session({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(routes);
 
-AppDataSource.initialize().then(async () => {
-  app.use(routes);
-}).catch(error => console.log(error))
 
 
 

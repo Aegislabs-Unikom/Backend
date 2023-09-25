@@ -24,3 +24,10 @@ export const verifyUser = async(req:Request,res:Response,next:NextFunction) => {
 
   next()
 }
+
+export const adminOnly = async(req:Request,res:Response,next:NextFunction) => {
+  const user = await Manager.findOneBy(User,{_id : new ObjectId(req.session['user_id'])})
+  if(!user) return res.status(401).json(errorRespone(`Login first to access this feature`))
+  if(user.role !== "Admin") return res.status(401).json(errorRespone(`You are not authorized to access this feature`))
+  next();
+}
