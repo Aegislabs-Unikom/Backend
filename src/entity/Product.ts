@@ -16,13 +16,19 @@ export class Product {
     price: number;
 
     @Column('text')
-    img_url?: string;
+    image?: string;
 
     @Column('text')
     user_id?: ObjectId;
 
     @Column()
     stock: number;
+
+     @Column()
+    createdAt: Date;
+
+    @Column()
+    updatedAt: Date;
 
 
     constructor(data: Partial<Product>) {

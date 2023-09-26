@@ -6,6 +6,7 @@ import cors from "cors";
 import routes from "../routes"
 import session from 'express-session';
 import http from "http";
+import path = require("path");
 dotenv.config();
 
 const app = express();
@@ -19,9 +20,11 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use('/image', express.static(path.join(__dirname, "../../public/upload")));
 app.use(routes);
 
 
