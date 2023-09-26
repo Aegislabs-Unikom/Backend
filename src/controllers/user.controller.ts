@@ -66,14 +66,13 @@ export const deleteUserById = async(req:Request,res:Response) => {
 }
 
 export const register = async (req: Request, res: Response) => {
-  const { nama, email, password, confPassword, role } = req.body;
+  const { nama, email, password, confPassword} = req.body;
 
   const schema = Joi.object({
     email: Joi.string().email().required(),
     nama: Joi.string().required(),
     password: Joi.string().min(3).required(),
     confPassword: Joi.string().valid(Joi.ref('password')).required(),
-    role: Joi.string().required(),
   });
 
   const { error } = schema.validate(req.body);
@@ -93,7 +92,7 @@ export const register = async (req: Request, res: Response) => {
       email: email,
       nama: nama,
       password: encryptPassword,
-      role: role,
+      role: "user",
       is_verified: false,
       createdAt: new Date(),
       updatedAt: new Date(),
