@@ -6,7 +6,6 @@ import { respone,errorRespone } from "../utils/Response";
 import { ObjectId } from "mongodb";
 import Joi from "joi";
 import fs from "fs";
-import { parse } from "url";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -40,6 +39,23 @@ export const getAllProductByUser = async (req:Request,res:Response) => {
     
   } catch (error) {
     if(error) return res.status(500).json(errorRespone(error.message))
+  }
+}
+
+export const getSingleProduct = async (req:Request,res:Response) => {
+  const {id} = req.params;
+  const session_user_id = req.session['user_id'];
+  if(req.role === "Admin"){
+    const product = await Manager.findOneBy(Product,{_id : new ObjectId(id)});
+    if(!product) return res.status(404).json(errorRespone(`Product with id ${id} not found`))
+    res.status(200).json(respone("[Admin] Success get product",product))
+  }else {
+    const product = await Manager.findOneBy(Product,{
+        _id : new ObjectId(id),
+        user_id : new ObjectId(session_user_id)
+    })
+    if(!product) return res.status(404).json(errorRespone(`Product with id ${id} not found`))
+    res.status(200).json(respone("[User] Success get product",product))
   }
 }
 
@@ -95,7 +111,9 @@ export const createProduct = async(req:Request,res:Response) => {
 
 export const updateProduct = async (req: Request, res: Response) => {
   const productId = req.params.id;
-  const { nama_produk, description, price, stock } = req.body;
+  const { nama_produk, description } = req.body;
+  const price = parseFloat(req.body.price);
+  const stock = parseInt(req.body.stock)
   const file = req.file;
   const newURL = file.filename;
 
@@ -108,7 +126,6 @@ export const updateProduct = async (req: Request, res: Response) => {
 
   const { error } = schema.validate(req.body);
 
-  
   if (error) {
     if (file) {
       fs.unlink(file.path, (unlinkError) => {
@@ -119,13 +136,8 @@ export const updateProduct = async (req: Request, res: Response) => {
       return res.status(400).json(errorRespone(error.details[0].message));
     }}
    
-    
- 
-
-
   try {
     const product = await Manager.findOneBy(Product, { _id: new ObjectId(productId) });
-
     if (!product) return res.status(404).json(errorRespone(`Product with id ${productId} not found`));
 
     if (product) {
