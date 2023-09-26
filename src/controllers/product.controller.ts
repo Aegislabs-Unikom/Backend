@@ -7,6 +7,7 @@ import { ObjectId } from "mongodb";
 import Joi from "joi";
 import fs from "fs";
 import dotenv from "dotenv";
+import { join } from "path";
 dotenv.config();
 
 export const getAllProduct = async (req:Request,res:Response) => {
@@ -67,7 +68,8 @@ export const createProduct = async(req:Request,res:Response) => {
         nama_produk : Joi.string().required(),
         description : Joi.string().required(),
         price : Joi.number().required(),
-        stock : Joi.number().required()
+        stock : Joi.number().required(),
+        category_id : Joi.string().required()
         
     })
     const {error} = schema.validate(req.body);
@@ -85,7 +87,7 @@ export const createProduct = async(req:Request,res:Response) => {
    
     
     
-    const {nama_produk, description} = req.body;
+    const {nama_produk, description, category_id} = req.body;
     const price = parseFloat(req.body.price);
     const stock = parseInt(req.body.stock)
     const user = await Manager.findOneBy(User,{_id : new ObjectId(session_user_id)});
@@ -97,6 +99,7 @@ export const createProduct = async(req:Request,res:Response) => {
       price : price,
       stock : stock,
       user_id : user._id,
+      category_id : category_id,
       image: file.filename,
       createdAt : new Date(),
       updatedAt : new Date(),
