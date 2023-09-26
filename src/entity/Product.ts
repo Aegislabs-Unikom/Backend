@@ -21,6 +21,9 @@ export class Product {
     @Column('text')
     user_id?: ObjectId;
 
+    @Column('text')
+    category_id?: ObjectId;
+
     @Column()
     stock: number;
 

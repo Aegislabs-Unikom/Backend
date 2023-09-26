@@ -1,4 +1,4 @@
-import { Entity, ObjectIdColumn, Column, CreateDateColumn, ObjectId } from "typeorm";
+import { Entity, ObjectIdColumn, Column,  ObjectId } from "typeorm";
 
 
 @Entity()
