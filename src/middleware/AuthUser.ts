@@ -12,11 +12,10 @@ declare module 'express' {
 }
 
 export const verifyUser = async(req:Request,res:Response,next:NextFunction) => {
-  let session_user_id = req.session['user_id']
-  if(!session_user_id){
-    return res.status(401).json(errorRespone(`Login first to access this feature`))
-  }
-  const user = await Manager.findOneBy(User, { _id: new ObjectId(session_user_id) })
+   const refresh_token = req.cookies.refresh_token;
+  if(!refresh_token) return res.status(401).json(errorRespone("Login first to access this feature"));
+  const users = await Manager.findOneBy(User,{refresh_token : refresh_token});
+  const user = await Manager.findOneBy(User, { _id: new ObjectId(users._id) })
   if(!user) return res.status(401).json(errorRespone(`Login first to access this feature`))
 
   req.user_id = user._id;
@@ -26,7 +25,11 @@ export const verifyUser = async(req:Request,res:Response,next:NextFunction) => {
 }
 
 export const adminOnly = async(req:Request,res:Response,next:NextFunction) => {
-  const user = await Manager.findOneBy(User,{_id : new ObjectId(req.session['user_id'])})
+   const refresh_token = req.cookies.refresh_token;
+  if(!refresh_token) return res.status(401).json(errorRespone("Admin Only "));
+  const users = await Manager.findOneBy(User,{refresh_token : refresh_token});
+
+  const user = await Manager.findOneBy(User,{_id : new ObjectId(users._id)})
   if(!user) return res.status(401).json(errorRespone(`Login first to access this feature`))
   if(user.role !== "Admin") return res.status(401).json(errorRespone(`You are not authorized to access this feature`))
   next();

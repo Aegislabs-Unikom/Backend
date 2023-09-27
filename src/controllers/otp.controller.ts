@@ -55,6 +55,7 @@ export const sendOTPVerificationEmail = async ({ id, email }, req: any, res: any
 
 
 export const verifyOTP = async (req: Request, res: Response) => {
+  
   const {  user_id, otp } = req.body;
 
   try {

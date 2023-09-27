@@ -104,6 +104,7 @@ export const register = async (req: Request, res: Response) => {
                 id: user._id,
                 email: user.email,
                 };
+    
 
       await sendOTPVerificationEmail(data,req,res);
     } catch (error) {
@@ -151,7 +152,6 @@ export const login = async (req: Request, res: Response) => {
       is_verified : user.is_verified
     }
 
-    req.session['user_id'] = user._id;
 
     res.status(200).json(respone("Success login", { accessToken, user : loginUser }));
    
@@ -162,14 +162,13 @@ export const login = async (req: Request, res: Response) => {
 
 export const logout = async(req: Request, res: Response) => {
 
-  const session_user_id = req.session['user_id'];
-  if(!session_user_id) return res.status(401).json(errorRespone(`Login first to access this feature`))
+  const refresh_token = req.cookies.refresh_token;
+  if(!refresh_token) return res.status(401).json(errorRespone("Refresh token not found"));
 
 
   try {
-    await Manager.update(User, {_id : new ObjectId(session_user_id)}, {refresh_token : ""})
+    await Manager.update(User, {refresh_token : refresh_token}, {refresh_token : ""})
     res.clearCookie("refresh_token");
-    req.session.destroy((err) => err ? console.error("Error destroying session:", err) : console.log("Session has been destroyed."));
     res.status(200).json(respone("Success logout",{}));
   } catch (error) {
     if(error) return res.status(500).json(errorRespone(error.message))

@@ -18,7 +18,9 @@ export const getAllProduct = async (req:Request,res:Response) => {
 }
 
 export const getAllProductByUser = async (req:Request,res:Response) => {
-  const session_user_id = req.session['user_id'];
+  const refresh_token = req.cookies.refresh_token;
+  if(!refresh_token) return res.status(401).json(errorRespone("Refresh token not found"));
+  const users = await Manager.findOneBy(User,{refresh_token : refresh_token});
   try {
     if(req.role === "Admin"){
       const products = await Manager.find(Product, {
@@ -29,7 +31,7 @@ export const getAllProductByUser = async (req:Request,res:Response) => {
     }else {
       const products = await Manager.find(Product,{
         where : {
-          user_id : new ObjectId(session_user_id)
+          user_id : new ObjectId(users._id)
         },
         select : ["_id","nama_produk","description","price","stock"]
       })
@@ -60,7 +62,9 @@ export const getSingleProduct = async (req:Request,res:Response) => {
 }
 
 export const createProduct = async(req:Request,res:Response) => {
-  const session_user_id = req.session['user_id'];
+  const refresh_token = req.cookies.refresh_token;
+  if(!refresh_token) return res.status(401).json(errorRespone("Refresh token not found"));
+  const users = await Manager.findOneBy(User,{refresh_token : refresh_token});
   const file = req.file;
 
    const schema = Joi.object({
@@ -89,7 +93,7 @@ export const createProduct = async(req:Request,res:Response) => {
     const {nama_produk, description, category_id} = req.body;
     const price = parseFloat(req.body.price);
     const stock = parseInt(req.body.stock)
-    const user = await Manager.findOneBy(User,{_id : new ObjectId(session_user_id)});
+    const user = await Manager.findOneBy(User,{_id : new ObjectId(users._id)});
 
     try {
     const product = new Product({
