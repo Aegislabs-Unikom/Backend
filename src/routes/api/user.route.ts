@@ -6,7 +6,7 @@ const router = Router();
 
 
 router.get("/",verifyUser,getAllUsers);
-router.delete("/logout",verifyUser,logout)
+router.delete("/logout",logout)
 router.post("/register",register);
 router.post("/login",login);
 router.delete("/:id",verifyUser,adminOnly,deleteUserById);

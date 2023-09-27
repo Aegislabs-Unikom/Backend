@@ -136,11 +136,13 @@ export const login = async (req: Request, res: Response) => {
 
   try {
     await Manager.update(User, {_id : user._id}, {refresh_token : refreshToken})
+
     res.cookie("refresh_token", refreshToken, {
        httpOnly : true,
-       maxAge : 24 * 60 * 60 * 1000
+       maxAge : 24 * 60 * 60 * 1000,
+       sameSite : "none",
+       secure : true
     })
-    req.session['user_id'] = user._id;
 
     const loginUser = {
       email : user.email,
@@ -148,6 +150,8 @@ export const login = async (req: Request, res: Response) => {
       role : user.role,
       is_verified : user.is_verified
     }
+
+    req.session['user_id'] = user._id;
 
     res.status(200).json(respone("Success login", { accessToken, user : loginUser }));
    
@@ -157,8 +161,10 @@ export const login = async (req: Request, res: Response) => {
 }
 
 export const logout = async(req: Request, res: Response) => {
-  const session_user_id = req.session['user_id']
-  if(!session_user_id) return res.status(401).json(errorRespone(`Login first to logout`))
+
+  const session_user_id = req.session['user_id'];
+  if(!session_user_id) return res.status(401).json(errorRespone(`Login first to access this feature`))
+
 
   try {
     await Manager.update(User, {_id : new ObjectId(session_user_id)}, {refresh_token : ""})
