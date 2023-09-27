@@ -21,7 +21,7 @@ app.use(helmet({
   crossOriginResourcePolicy: false,
 }));
 app.use(session({
-  secret: 'secret', 
+  secret: 'thisismysecrctekeyfhrgfgrfrty84fwir767', 
   resave: false,
   saveUninitialized: false,
 }));

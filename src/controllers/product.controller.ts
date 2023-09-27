@@ -7,7 +7,6 @@ import { ObjectId } from "mongodb";
 import Joi from "joi";
 import fs from "fs";
 import dotenv from "dotenv";
-import { join } from "path";
 dotenv.config();
 
 export const getAllProduct = async (req:Request,res:Response) => {
