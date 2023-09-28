@@ -1,5 +1,5 @@
 import {Request,Response,NextFunction} from "express";
-import { Manager } from "../data-source";
+import { AppDataSource, Manager } from "../data-source";
 import { respone,errorRespone } from "../utils/Response";
 import { User } from "../entity/User.entity";
 import { ObjectId } from "mongodb";
@@ -7,6 +7,7 @@ import bcrypt from "bcrypt";
 import Joi from "joi";
 import { accessTokenSign,refreshTokenSign } from "../config/jwt";
 import { sendOTPVerificationEmail } from "./otp.controller";
+import { MongoEntityManager } from "typeorm";
 
 
 async function checkEmail(email: string) {
