@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import { OTP } from "../entity/OTP.entity";
 import { User } from "../entity/User.entity";
-import { Manager } from "../utils/Manager";
+import { Manager } from "../data-source";
 import { ObjectId } from "mongodb";
 import { Request, Response } from "express";
 import { respone,errorRespone } from "../utils/Response";

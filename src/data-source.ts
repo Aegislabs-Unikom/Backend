@@ -15,6 +15,10 @@ export const AppDataSource = new DataSource({
 
 })
 
-AppDataSource.initialize().then(async () => {
-    
-}).catch(error => console.log(error))
+AppDataSource.initialize()
+  .then(async () => {
+    console.log("Connection initialized with database...");
+  })
+  .catch((error) => console.log(error));
+
+export const Manager = AppDataSource.manager;

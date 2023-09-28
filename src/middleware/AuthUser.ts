@@ -1,5 +1,5 @@
 import { Request,Response,NextFunction } from "express";
-import { Manager } from "../utils/Manager";
+import { Manager } from "../data-source";
 import { User } from "../entity/User.entity";
 import { ObjectId } from "mongodb";
 import { errorRespone } from "../utils/Response";

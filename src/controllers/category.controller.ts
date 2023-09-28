@@ -1,5 +1,5 @@
 import { Response,Request } from "express";
-import { Manager } from "../utils/Manager";
+import { Manager } from "../data-source";
 import { ObjectId } from "mongodb";
 import { Category } from "../entity/Category.entity";
 import { respone,errorRespone } from "../utils/Response";

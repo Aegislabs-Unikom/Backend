@@ -1,5 +1,5 @@
 import { Request,Response } from "express";
-import { Manager } from "../utils/Manager";
+import { Manager } from "../data-source";
 import { Product } from "../entity/Product.entity";
 import { User } from "../entity/User.entity";
 import { respone,errorRespone } from "../utils/Response";
