@@ -1,9 +1,9 @@
 import "reflect-metadata"
 import { DataSource } from "typeorm"
-import { User } from "./entity/User"
-import { OTP } from "./entity/OTP"
-import { Product } from "./entity/Product"
-import { Category } from "./entity/Category"
+import { User } from "./entity/User.entity"
+import { OTP } from "./entity/OTP.entity"
+import { Product } from "./entity/Product.entity"
+import { Category } from "./entity/Category.entity"
 
 export const AppDataSource = new DataSource({
     type: "mongodb",
@@ -11,7 +11,7 @@ export const AppDataSource = new DataSource({
     database: "questfinal",
     synchronize: true,
     logging: false,
-    entities: [User,OTP,Product,Category],
+    entities: [__dirname + '/../**/*.entity.{js,ts}']
 
 })
 

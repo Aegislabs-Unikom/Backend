@@ -1,7 +1,7 @@
 import { Request,Response } from "express";
 import { Manager } from "../utils/Manager";
-import { Product } from "../entity/Product";
-import { User } from "../entity/User";
+import { Product } from "../entity/Product.entity";
+import { User } from "../entity/User.entity";
 import { respone,errorRespone } from "../utils/Response";
 import { ObjectId } from "mongodb";
 import Joi from "joi";

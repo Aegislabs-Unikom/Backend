@@ -1,6 +1,6 @@
 import { Request,Response,NextFunction } from "express";
 import { Manager } from "../utils/Manager";
-import { User } from "../entity/User";
+import { User } from "../entity/User.entity";
 import { ObjectId } from "mongodb";
 import { errorRespone } from "../utils/Response";
 

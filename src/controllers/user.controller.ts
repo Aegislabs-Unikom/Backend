@@ -1,7 +1,7 @@
 import {Request,Response,NextFunction} from "express";
 import { Manager } from "../utils/Manager";
 import { respone,errorRespone } from "../utils/Response";
-import { User } from "../entity/User";
+import { User } from "../entity/User.entity";
 import { ObjectId } from "mongodb";
 import bcrypt from "bcrypt";
 import Joi from "joi";
