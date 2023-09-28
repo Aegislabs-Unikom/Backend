@@ -6,6 +6,7 @@ import cors from "cors";
 import routes from "../routes"
 import session from 'express-session';
 import http from "http";
+import { AppDataSource } from "../data-source";
 import path = require("path");
 dotenv.config();
 
@@ -34,7 +35,16 @@ app.use(helmet({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/image', express.static(path.join(__dirname, "../../public/upload")));
-app.use(routes);
+
+AppDataSource.initialize()
+  .then(async () => {
+    app.use(routes);
+    console.log("Connection initialized with database...");
+  })
+  .catch((error) => console.log(error));
+
+
+
 
 
 
