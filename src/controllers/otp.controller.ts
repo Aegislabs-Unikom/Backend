@@ -55,7 +55,10 @@ export const sendOTPVerificationEmail = async ({ id, email }, req: any, res: any
 
 
 export const verifyOTP = async (req: Request, res: Response) => {
-  const {  user_id, otp } = req.body;
+
+  const user_id = req.session['user_id'];
+
+  const { otp } = req.body;
 
   try {
     if (!user_id || !otp) {
@@ -89,7 +92,9 @@ export const verifyOTP = async (req: Request, res: Response) => {
 
       user.is_verified = true;
       await Manager.save(User, user);
-
+      
+      req.session.destroy((err) => err ? console.error("Error destroying session:", err) : console.log("Session has been destroyed."));
+      
       await Manager.delete(OTP, { user_id: new ObjectId(user_id) });
 
       res.status(200).json(respone("User has been verified", user));
