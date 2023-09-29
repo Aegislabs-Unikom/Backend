@@ -19,7 +19,6 @@ async function checkEmail(email: string) {
 }
 
 export const getAllUsers = async (req:Request,res:Response) => {
-  
   try {
     if(req.role === "Admin"){
       const users = await Manager.find(User, {
@@ -144,7 +143,7 @@ export const login = async (req: Request, res: Response) => {
        httpOnly : true,
        maxAge : 24 * 60 * 60 * 1000,
        sameSite : "none",
-       secure : true
+       secure : true,
     })
 
     req.session["user_id"] = user._id
@@ -168,6 +167,10 @@ export const login = async (req: Request, res: Response) => {
 export const logout = async(req: Request, res: Response) => {
   
   const user_id = req.session['user_id'];
+
+  console.log("user id nya : ",user_id);
+  
+
   if(!user_id) return res.status(401).json(errorRespone("Login first to access this feature"));
 
   try {

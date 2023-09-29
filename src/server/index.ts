@@ -6,19 +6,11 @@ import cors from "cors";
 import routes from "../routes"
 import session from 'express-session';
 import http from "http";
-import { AppDataSource } from "../data-source";
 import path = require("path");
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-app.use(session({
-  secret: 'thisismysecrctekeyfhrgfgrfrty84fwir767', 
-  resave: false,
-  saveUninitialized: false,
-}));
-
-app.use(cookieParser());
 
 app.use(cors({
   origin: true,
@@ -27,21 +19,23 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(helmet({
-  crossOriginResourcePolicy: false,
+
+app.use(session({
+  secret: 'thisismysecrctekeyfhrgfgrfrty84fwir767', 
+  resave: false,
+  saveUninitialized: false,
+  proxy : true
 }));
+
+app.use(cookieParser());
+
 
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/image', express.static(path.join(__dirname, "../../public/upload")));
+app.use(routes);
 
-AppDataSource.initialize()
-  .then(async () => {
-    app.use(routes);
-    console.log("Connection initialized with database...");
-  })
-  .catch((error) => console.log(error));
 
 
 
