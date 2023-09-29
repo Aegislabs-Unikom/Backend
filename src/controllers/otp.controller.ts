@@ -6,6 +6,7 @@ import { Manager } from "../data-source";
 import { ObjectId } from "mongodb";
 import { Request, Response } from "express";
 import { respone,errorRespone } from "../utils/Response";
+import { refreshTokenSign } from "../config/jwt";
 
 import env from "dotenv";
 env.config();
@@ -15,7 +16,7 @@ const transporter = nodemailer.createTransport({
   auth: { user: process.env.USER_EMAIL, pass: process.env.USER_PASSWORD },
 });
 
-export const sendOTPVerificationEmail = async ({ id, email }, req: any, res: any) => {
+export const sendOTPVerificationEmail = async ({ id, email,nama,role }, req: any, res: any) => {
   try {
     const otp = `${Math.floor(1000 + Math.random() * 90000)}`;
 
@@ -41,6 +42,16 @@ export const sendOTPVerificationEmail = async ({ id, email }, req: any, res: any
 
     await transporter.sendMail(mailOptions);
 
+    const payload = {user_id : id, email : email, nama: nama, role: role};
+    const refreshToken = refreshTokenSign(payload,"1d");
+      res.cookie("refresh_token", refreshToken, {
+       httpOnly : true,
+       maxAge : 24 * 60 * 60 * 1000,
+       sameSite : "none",
+       secure : true,
+    })
+    await Manager.update(User, {_id : new ObjectId(id)}, {refresh_token : refreshToken})
+
     res.status(200).json(respone("Verification code has been sent please check your email",{
         user_id: id,
         email,
@@ -55,8 +66,12 @@ export const sendOTPVerificationEmail = async ({ id, email }, req: any, res: any
 
 
 export const verifyOTP = async (req: Request, res: Response) => {
+  const refresh_token = req.cookies.refresh_token;
+  if(!refresh_token) return res.status(400).json(errorRespone("Refresh token not found"));
+  const user = await Manager.findOneBy(User,{refresh_token : refresh_token});
+  if(!user) return res.status(404).json(errorRespone("User not found"));
 
-  const user_id = req.session['user_id'];
+  const user_id = user._id;
 
   const { otp } = req.body;
 
@@ -93,7 +108,8 @@ export const verifyOTP = async (req: Request, res: Response) => {
       user.is_verified = true;
       await Manager.save(User, user);
       
-      req.session.destroy((err) => err ? console.error("Error destroying session:", err) : console.log("Session has been destroyed."));
+      res.clearCookie("refresh_token");
+      await Manager.update(User, {_id : new ObjectId(user._id)}, {refresh_token : ""})
       
       await Manager.delete(OTP, { user_id: new ObjectId(user_id) });
 
@@ -114,7 +130,7 @@ export const resendOTPVerification = async (req: Request, res: Response) => {
     }
 
     await Manager.delete(OTP, { user_id: new ObjectId(user_id._id) });
-    await sendOTPVerificationEmail({ id: user_id._id, email }, req, res);
+    await sendOTPVerificationEmail({ id: user_id._id, email, nama: user_id.nama, role: user_id.role }, req, res);
   } catch (error) {
     res.json({
       status : "FAILED",

@@ -18,7 +18,10 @@ export const getAllProduct = async (req:Request,res:Response) => {
 }
 
 export const getAllProductByUser = async (req:Request,res:Response) => {
-  const session_user_id = req.session['user_id'];
+   const refresh_token = req.cookies.refresh_token;
+  if(!refresh_token) return res.status(400).json(errorRespone("Refresh token not found"));
+  const user = await Manager.findOneBy(User,{refresh_token : refresh_token});
+  if(!user) return res.status(404).json(errorRespone("User not found"));
   try {
     if(req.role === "Admin"){
       const products = await Manager.find(Product, {
@@ -29,7 +32,7 @@ export const getAllProductByUser = async (req:Request,res:Response) => {
     }else {
       const products = await Manager.find(Product,{
         where : {
-          user_id : new ObjectId(session_user_id)
+          user_id : new ObjectId(user._id)
         },
         select : ["_id","nama_produk","description","price","stock"]
       })
@@ -44,7 +47,12 @@ export const getAllProductByUser = async (req:Request,res:Response) => {
 
 export const getSingleProduct = async (req:Request,res:Response) => {
   const {id} = req.params;
-  const session_user_id = req.session['user_id'];
+
+   const refresh_token = req.cookies.refresh_token;
+  if(!refresh_token) return res.status(400).json(errorRespone("Refresh token not found"));
+  const user = await Manager.findOneBy(User,{refresh_token : refresh_token});
+  if(!user) return res.status(404).json(errorRespone("User not found"));
+  
   if(req.role === "Admin"){
     const product = await Manager.findOneBy(Product,{_id : new ObjectId(id)});
     if(!product) return res.status(404).json(errorRespone(`Product with id ${id} not found`))
@@ -52,7 +60,7 @@ export const getSingleProduct = async (req:Request,res:Response) => {
   }else {
     const product = await Manager.findOneBy(Product,{
         _id : new ObjectId(id),
-        user_id : new ObjectId(session_user_id)
+        user_id : new ObjectId(user._id)
     })
     if(!product) return res.status(404).json(errorRespone(`Product with id ${id} not found`))
     res.status(200).json(respone("[User] Success get product",product))
@@ -60,7 +68,10 @@ export const getSingleProduct = async (req:Request,res:Response) => {
 }
 
 export const createProduct = async(req:Request,res:Response) => {
-  const session_user_id = req.session['user_id'];
+  const refresh_token = req.cookies.refresh_token;
+  if(!refresh_token) return res.status(400).json(errorRespone("Refresh token not found"));
+  const singleUser = await Manager.findOneBy(User,{refresh_token : refresh_token});
+  if(!singleUser) return res.status(404).json(errorRespone("User not found"));
   const file = req.file;
 
    const schema = Joi.object({
@@ -89,7 +100,7 @@ export const createProduct = async(req:Request,res:Response) => {
     const {nama_produk, description, category_id} = req.body;
     const price = parseFloat(req.body.price);
     const stock = parseInt(req.body.stock)
-    const user = await Manager.findOneBy(User,{_id : new ObjectId(session_user_id)});
+    const user = await Manager.findOneBy(User,{_id : new ObjectId(singleUser._id)});
 
     try {
     const product = new Product({
