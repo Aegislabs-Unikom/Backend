@@ -15,6 +15,9 @@ export class Cart {
   @Column()
   createdAt: Date; 
 
+  @Column()
+  updatedAt: Date; 
+
 
    constructor(data: Partial<Cart>){
         Object.assign(this,data)
