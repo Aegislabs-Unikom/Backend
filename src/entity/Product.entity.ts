@@ -16,7 +16,7 @@ export class Product {
     price: number;
 
     @Column('text')
-    image?: string;
+    image?: any;
 
     @Column('text')
     user_id?: ObjectId;
