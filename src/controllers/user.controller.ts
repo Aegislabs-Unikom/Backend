@@ -97,21 +97,6 @@ export const register = async (req: Request, res: Response) => {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-        
-    const payload = {user_id : user._id, email : user.email, nama: user.nama, role: user.role};
-
-     const refreshToken = refreshTokenSign(payload,"1d");
-      res.cookie("refresh_token", refreshToken, {
-       httpOnly : true,
-       maxAge : 24 * 60 * 60 * 1000,
-       sameSite : "none",
-       secure : true,
-    })
-
-    req.session["user_id"] = user._id
-
-
-    await Manager.update(User, {_id : new ObjectId(user._id)}, {refresh_token : refreshToken})        
 
     try {
       await Manager.save(User, user);
@@ -121,7 +106,25 @@ export const register = async (req: Request, res: Response) => {
                 nama : user.nama,
                 role : user.role
                 };
-  
+      
+    const payload = {user_id : user._id, email : user.email, nama: user.nama, role: user.role};
+
+    
+    const refreshToken = refreshTokenSign(payload,"1d");
+    
+      res.cookie("refresh_token", refreshToken, {
+       httpOnly : true,
+       maxAge : 24 * 60 * 60 * 1000,
+       sameSite : "none",
+       secure : true,
+    })
+
+
+    req.session["user_id"] = user._id
+
+    await Manager.update(User, {_id : new ObjectId(user._id)}, {refresh_token : refreshToken})          
+
+
 
       await sendOTPVerificationEmail(data,req,res);
     } catch (error) {
