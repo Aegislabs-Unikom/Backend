@@ -100,6 +100,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
       await Manager.save(User, user);
       
       res.clearCookie("refresh_token");
+      req.session.destroy((err) => err ? console.error("Error destroying session:", err) : console.log("Session has been destroyed."));
       await Manager.update(User, {_id : new ObjectId(user._id)}, {refresh_token : ""})
       
       await Manager.delete(OTP, { user_id: new ObjectId(user_id) });
