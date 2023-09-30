@@ -10,10 +10,22 @@ const storage = multer.diskStorage({
   },
 });
 
+//  Local storage
 const upload = multer({ 
   storage : storage,
   fileFilter: checkFileType,
   limits: { fileSize: 1024 * 1024 * 5 }});
+
+
+//  Google Bucket
+const multerUploads = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: checkFileType,
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+});
+
 
 
 function checkFileType(req: any, file: any, callback: any) {
@@ -27,4 +39,4 @@ function checkFileType(req: any, file: any, callback: any) {
   }
 }
 
-export default upload;
+export default multerUploads;

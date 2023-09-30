@@ -6,12 +6,13 @@ import { respone,errorRespone } from "../utils/Response";
 import { ObjectId } from "mongodb";
 import Joi from "joi";
 import fs from "fs";
+import storageService from "../utils/storageService";
 import dotenv from "dotenv";
 dotenv.config();
 
 export const getAllProduct = async (req:Request,res:Response) => {
   const products = await Manager.find(Product, {
-    select  : ["_id","nama_produk","description","price","stock"]
+    select  : ["_id","nama_produk","description","price","stock","image"]
   })
   if(!products) return res.status(404).json(errorRespone("Products not found"))
   res.status(200).json(respone("Success get all products",products))
@@ -25,7 +26,7 @@ export const getAllProductByUser = async (req:Request,res:Response) => {
   try {
     if(req.role === "Admin"){
       const products = await Manager.find(Product, {
-        select  : ["_id","nama_produk","description","price","stock"]
+        select  : ["_id","nama_produk","description","price","stock","image"]
       })
       if(!products) return res.status(404).json(errorRespone("Products not found"))
       res.status(200).json(respone("[Admin] Success get all products",products))
@@ -74,6 +75,7 @@ export const createProduct = async(req:Request,res:Response) => {
   if(!singleUser) return res.status(404).json(errorRespone("User not found"));
   const file = req.file;
 
+
    const schema = Joi.object({
         nama_produk : Joi.string().required(),
         description : Joi.string().required(),
@@ -101,6 +103,7 @@ export const createProduct = async(req:Request,res:Response) => {
     const price = parseFloat(req.body.price);
     const stock = parseInt(req.body.stock)
     const user = await Manager.findOneBy(User,{_id : new ObjectId(singleUser._id)});
+    const url = await storageService.store(file, "product/");
 
     try {
     const product = new Product({
@@ -110,7 +113,7 @@ export const createProduct = async(req:Request,res:Response) => {
       stock : stock,
       user_id : user._id,
       category_id : category_id,
-      image: file.filename,
+      image: url,
       createdAt : new Date(),
       updatedAt : new Date(),
     })
