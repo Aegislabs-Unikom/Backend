@@ -6,7 +6,6 @@ import { Manager } from "../data-source";
 import { ObjectId } from "mongodb";
 import { Request, Response } from "express";
 import { respone,errorRespone } from "../utils/Response";
-import { refreshTokenSign } from "../config/jwt";
 
 import env from "dotenv";
 env.config();
