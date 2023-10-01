@@ -40,26 +40,7 @@ export const sendOTPVerificationEmail = async ({ id, email,nama,role }, req: any
     })
 
 
-    await transporter.sendMail(mailOptions);
-
-    const payload = {user_id : id, email : email, nama: nama, role: role};
-
-    
-    const refreshToken = refreshTokenSign(payload,"1d");
-
-    
-
-    res.cookie("refresh_token", refreshToken, {
-       httpOnly : true,
-       maxAge : 24 * 60 * 60 * 1000,
-       sameSite : "none",
-       secure : true,
-    })
- 
-
-    await Manager.update(User, {_id : new ObjectId(id)}, {refresh_token : refreshToken})      
-
-
+    await transporter.sendMail(mailOptions); 
     res.status(200).json(respone("Verification code has been sent please check your email",{
         user_id: id,
         email,

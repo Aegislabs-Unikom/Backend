@@ -66,11 +66,13 @@ export const deleteUserById = async(req:Request,res:Response) => {
 }
 
 export const register = async (req: Request, res: Response) => {
-  const { nama, email, password, confPassword} = req.body;
+  const { nama, email,alamat,no_hp, password, confPassword} = req.body;
 
   const schema = Joi.object({
     email: Joi.string().email().required(),
     nama: Joi.string().required(),
+    alamat: Joi.string().required(),
+    no_hp: Joi.string().required(),
     password: Joi.string().min(3).required(),
     confPassword: Joi.string().valid(Joi.ref('password')).required(),
   });
@@ -91,12 +93,30 @@ export const register = async (req: Request, res: Response) => {
     const user = new User({
       email: email,
       nama: nama,
+      alamat : alamat,
+      no_hp : no_hp,
       password: encryptPassword,
       role: "user",
       is_verified: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
+
+
+    const payload = {user_id : user._id, email : user.email, nama: user.nama, role: user.role};
+
+    
+    const refreshToken = refreshTokenSign(payload,"1d");
+
+    
+
+    res.cookie("refresh_token", refreshToken, {
+       httpOnly : true,
+       maxAge : 24 * 60 * 60 * 1000,
+       sameSite : "none",
+       secure : true,
+    })
+ 
 
     try {
       await Manager.save(User, user);
@@ -106,8 +126,10 @@ export const register = async (req: Request, res: Response) => {
                 nama : user.nama,
                 role : user.role
                 };
-
+      
+      await Manager.update(User, {_id : new ObjectId(data.id)}, {refresh_token : refreshToken})     
       await sendOTPVerificationEmail(data,req,res);
+      
     } catch (error) {
       if (error) return res.status(500).json(errorRespone(error.message));
     }
