@@ -5,7 +5,9 @@ import { User } from "../entity/User.entity";
 import { respone,errorRespone } from "../utils/Response";
 import { ObjectId } from "mongodb";
 import Joi from "joi";
+import { extname,join,resolve } from "path";
 import fs from "fs";
+import { Storage } from "@google-cloud/storage";
 import storageService from "../utils/storageService";
 import dotenv from "dotenv";
 dotenv.config();
@@ -130,8 +132,6 @@ export const updateProduct = async (req: Request, res: Response) => {
   const { nama_produk, description } = req.body;
   const price = parseFloat(req.body.price);
   const stock = parseInt(req.body.stock)
-  const file = req.file;
-  const newURL = file.filename;
 
   const schema = Joi.object({
     nama_produk: Joi.string().required(),
@@ -142,29 +142,18 @@ export const updateProduct = async (req: Request, res: Response) => {
 
   const { error } = schema.validate(req.body);
 
-  if (error) {
-    if (file) {
-      fs.unlink(file.path, (unlinkError) => {
-        if (unlinkError) {
-          console.error("Error deleting uploaded file:", unlinkError);
-        }
-      });
-      return res.status(400).json(errorRespone(error.details[0].message));
-    }}
+ 
    
   try {
     const product = await Manager.findOneBy(Product, { _id: new ObjectId(productId) });
     if (!product) return res.status(404).json(errorRespone(`Product with id ${productId} not found`));
 
-    if (product) {
-        fs.unlinkSync(`./public/upload/${product.image}`)
-      }
 
     product.nama_produk = nama_produk;
     product.description = description;
     product.price = price;
     product.stock = stock;
-    product.image = newURL;
+  
 
     await Manager.save(Product, product);
 
@@ -179,13 +168,38 @@ export const deleteProduct = async (req: Request, res: Response) => {
   const {id} = req.params;
   const product = await Manager.findOneBy(Product,{_id : new ObjectId(id)});
   if(!product) return res.status(404).json(errorRespone(`Product with id ${id} not found`))
-  const pathDeleted = "./public/upload/" + product.image;
 
+    
+const credentials = join(resolve(), "credentials.json");
+const credentialsFile = fs.readFileSync(credentials);
+const projectId = JSON.parse(credentialsFile.toString()).project_id;
+const storage = new Storage({
+  keyFilename: credentials,
+  projectId: projectId,
+});
+   const bucket = storage.bucket("greenify_profile");
+
+    var image_file= product.image;
+    new Promise((resolve, reject) => {
+    var imageurl = image_file.split("/");
+    imageurl = imageurl.slice(4, imageurl.length + 1).join("/");
+
+
+    storage
+        .bucket(bucket.name)
+        .file(imageurl)
+        .delete()
+        .then((image) => {
+            resolve(image)
+        })
+        .catch((e) => {
+            reject(e)
+        });
+
+});
+  
   try {
     await Manager.delete(Product,{_id : new ObjectId(id)});
-     fs.unlink(pathDeleted, (err) => {
-            if(err) throw err;
-        })
     res.status(200).json(respone("Success delete product",product));
   } catch (error) {
     if(error) return res.status(500).json(errorRespone(error.message))

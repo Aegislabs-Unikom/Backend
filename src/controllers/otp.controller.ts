@@ -6,6 +6,7 @@ import { Manager } from "../data-source";
 import { ObjectId } from "mongodb";
 import { Request, Response } from "express";
 import { respone,errorRespone } from "../utils/Response";
+import { refreshTokenSign } from "../config/jwt";
 
 import env from "dotenv";
 env.config();
@@ -40,6 +41,23 @@ export const sendOTPVerificationEmail = async ({ id, email,nama,role }, req: any
 
 
     await transporter.sendMail(mailOptions);
+
+    const payload = {user_id : id, email : email, nama: nama, role: role};
+
+    
+    const refreshToken = refreshTokenSign(payload,"1d");
+
+    
+
+    res.cookie("refresh_token", refreshToken, {
+       httpOnly : true,
+       maxAge : 24 * 60 * 60 * 1000,
+       sameSite : "none",
+       secure : true,
+    })
+ 
+
+    await Manager.update(User, {_id : new ObjectId(id)}, {refresh_token : refreshToken})      
 
 
     res.status(200).json(respone("Verification code has been sent please check your email",{
