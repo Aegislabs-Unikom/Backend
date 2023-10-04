@@ -148,8 +148,8 @@ export const updateProduct = async (req: Request, res: Response) => {
 
   const { error } = schema.validate(req.body);
 
+  if(error) return res.status(400).json(errorRespone(error.details[0].message));
  
-   
   try {
     const product = await Manager.findOneBy(Product, { _id: new ObjectId(productId) });
     if (!product) return res.status(404).json(errorRespone(`Product with id ${productId} not found`));

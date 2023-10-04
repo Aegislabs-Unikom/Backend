@@ -61,7 +61,6 @@ export const verifyOTP = async (req: Request, res: Response) => {
   if(!user) return res.status(404).json(errorRespone("User not found"));
 
   const user_id = user._id;
-
   const { otp } = req.body;
 
   try {

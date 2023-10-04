@@ -11,6 +11,9 @@ export class Cart {
 
   @Column('text')
   product_id?: ObjectId;
+  
+  @Column()
+  amount : number;
 
   @Column()
   createdAt: Date; 
