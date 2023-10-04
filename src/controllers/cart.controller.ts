@@ -65,6 +65,7 @@ export const createCart = async (req: any, res: any) => {
     const cart = new Cart({
       user_id : user._id,
       product_id : new ObjectId(product._id),
+      quantity : quantity,
       amount : quantity * product.price,
       createdAt : new Date(),
       updatedAt : new Date()

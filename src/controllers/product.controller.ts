@@ -5,7 +5,7 @@ import { User } from "../entity/User.entity";
 import { respone,errorRespone } from "../utils/Response";
 import { ObjectId } from "mongodb";
 import Joi from "joi";
-import { extname,join,resolve } from "path";
+import { join,resolve } from "path";
 import fs from "fs";
 import { Storage } from "@google-cloud/storage";
 import storageService from "../utils/storageService";
