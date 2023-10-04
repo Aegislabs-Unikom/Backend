@@ -46,14 +46,20 @@ export const getAllCart = async (req: any, res: any) => {
 }
 
 export const createCart = async (req: any, res: any) => {
+  
   const {id} = req.params;
   const product = await Manager.findOneBy(Product,{_id : new ObjectId(id)});
+  const user = await Manager.findOneBy(User,{refresh_token : req.cookies.refresh_token});
+  if(!product) return res.status(404).json(errorRespone(`Product with id ${id} not found`))
   const quantity = parseInt(req.body.quantity);
-
+  
   if(product.stock < quantity) return res.status(400).json(errorRespone("Stock is Empty"));
 
   product.stock -= quantity;
-  const user = await Manager.findOneBy(User,{refresh_token : req.cookies.refresh_token});
+  
+
+
+  if(new ObjectId(user._id).equals(new ObjectId(product.user_id)) ) return res.status(400).json(errorRespone("You can't buy your product"));
   
   try {
     const cart = new Cart({

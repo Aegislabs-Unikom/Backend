@@ -14,7 +14,7 @@ dotenv.config();
 
 export const getAllProduct = async (req:Request,res:Response) => {
   const products = await Manager.find(Product, {
-    select  : ["_id","nama_produk","description","price","stock","image"]
+    select  : ["_id","nama_produk","description","price","stock","image","user_id"]
   })
   if(!products) return res.status(404).json(errorRespone("Products not found"))
   res.status(200).json(respone("Success get all products",products))
@@ -28,7 +28,7 @@ export const getAllProductByUser = async (req:Request,res:Response) => {
   try {
     if(req.role === "Admin"){
       const products = await Manager.find(Product, {
-        select  : ["_id","nama_produk","description","price","stock","image"]
+        select  : ["_id","nama_produk","description","price","stock","image","user_id"]
       })
       if(!products) return res.status(404).json(errorRespone("Products not found"))
       res.status(200).json(respone("[Admin] Success get all products",products))
@@ -37,7 +37,7 @@ export const getAllProductByUser = async (req:Request,res:Response) => {
         where : {
           user_id : new ObjectId(user._id)
         },
-        select : ["_id","nama_produk","description","price","stock"]
+        select : ["_id","nama_produk","description","price","stock","image","user_id"]
       })
       if(!products) return res.status(404).json(errorRespone("Products not found"))
       res.status(200).json(respone("[User] Success get all products",products))
@@ -76,6 +76,12 @@ export const createProduct = async(req:Request,res:Response) => {
   const singleUser = await Manager.findOneBy(User,{refresh_token : refresh_token});
   if(!singleUser) return res.status(404).json(errorRespone("User not found"));
   const file = req.file;
+  
+
+  if (!file) {
+  console.log("No file uploaded");
+
+}
 
 
    const schema = Joi.object({
