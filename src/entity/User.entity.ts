@@ -13,7 +13,7 @@ export class User {
     nama: string;
 
     @Column()
-    alamat: string;
+    alamat?: string;
 
     @Column()
     no_hp: string;

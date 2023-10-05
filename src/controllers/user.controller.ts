@@ -1,5 +1,5 @@
 import {Request,Response,NextFunction} from "express";
-import { AppDataSource, Manager } from "../data-source";
+import {  Manager } from "../data-source";
 import { respone,errorRespone } from "../utils/Response";
 import { User } from "../entity/User.entity";
 import { ObjectId } from "mongodb";
@@ -66,12 +66,11 @@ export const deleteUserById = async(req:Request,res:Response) => {
 }
 
 export const register = async (req: Request, res: Response) => {
-  const { nama, email,alamat,no_hp, password, confPassword} = req.body;
+  const { nama, email,no_hp, password, confPassword} = req.body;
 
   const schema = Joi.object({
     email: Joi.string().email().required(),
     nama: Joi.string().required(),
-    alamat: Joi.string().required(),
     no_hp: Joi.string().required(),
     password: Joi.string().min(3).required(),
     confPassword: Joi.string().valid(Joi.ref('password')).required(),
@@ -93,7 +92,6 @@ export const register = async (req: Request, res: Response) => {
     const user = new User({
       email: email,
       nama: nama,
-      alamat : alamat,
       no_hp : no_hp,
       password: encryptPassword,
       role: "user",
@@ -201,4 +199,12 @@ export const logout = async(req: Request, res: Response) => {
     if(error) return res.status(500).json(errorRespone(error.message))
   }
 
+}
+
+
+export const addAlamat = async (req: Request, res: Response) => {
+  const user = await Manager.findOneBy(User,{refresh_token : req.cookies.refresh_token});
+  user.alamat = req.body.alamat;
+  await Manager.save(User, user);
+  res.status(201).json(respone(`Berhasil menambahkan alamat untuk user ${user.email}`, user));
 }

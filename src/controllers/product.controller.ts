@@ -135,13 +135,14 @@ export const createProduct = async(req:Request,res:Response) => {
 
 export const updateProduct = async (req: Request, res: Response) => {
   const productId = req.params.id;
-  const { nama_produk, description } = req.body;
+  const { nama_produk, description, category_id } = req.body;
   const price = parseFloat(req.body.price);
   const stock = parseInt(req.body.stock)
 
   const schema = Joi.object({
     nama_produk: Joi.string().required(),
     description: Joi.string().required(),
+    category_id: Joi.string().required(),
     price: Joi.number().required(),
     stock: Joi.number().required(),
   });
@@ -159,6 +160,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     product.description = description;
     product.price = price;
     product.stock = stock;
+    product.category_id = category_id;
   
 
     await Manager.save(Product, product);
