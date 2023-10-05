@@ -1,9 +1,5 @@
 import "reflect-metadata"
 import { DataSource } from "typeorm"
-import { User } from "./entity/User.entity"
-import { OTP } from "./entity/OTP.entity"
-import { Product } from "./entity/Product.entity"
-import { Category } from "./entity/Category.entity"
 
 export const AppDataSource = new DataSource({
     type: "mongodb",
