@@ -12,7 +12,7 @@ export class Order {
   @Column()
   status: string; 
 
-  @Column()
+  @Column('int')
   total_amount: number; 
 
   @Column('text')

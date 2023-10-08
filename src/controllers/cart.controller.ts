@@ -7,43 +7,63 @@ import { errorRespone,respone } from "../utils/Response";
 
 export const getAllCart = async (req: any, res: any) => {
   const refresh_token = req.cookies.refresh_token;
-  if(!refresh_token) return res.status(400).json(errorRespone("Refresh token not found"));
-  const user = await Manager.findOneBy(User,{refresh_token : refresh_token});
-  if(!user) return res.status(404).json(errorRespone("User not found"));
+  if (!refresh_token) return res.status(400).json(errorRespone("Refresh token not found"));
+  const user = await Manager.findOneBy(User, { refresh_token: refresh_token });
+  if (!user) return res.status(404).json(errorRespone("User not found"));
 
-  if(req.role === "Admin"){
-    const carts = await Manager.find(Cart)
-    if(!carts) return res.status(404).json(errorRespone("Cart not found"))
+  if (req.role === "Admin") {
+    const carts = await Manager.find(Cart);
+    if (!carts) return res.status(404).json(errorRespone("Cart not found"));
 
-     const  userIdsInCarts = carts.map((cart)=> cart.product_id)
+    const userIdsInCarts = carts.map((cart) => cart.product_id);
 
-    const products = await Promise.all(
-    userIdsInCarts.map(async (userId) => {
-      const product = await Manager.find(Product, { where: { _id: userId } });
-      return product;
+    const productsWithQuantity = await Promise.all(
+      userIdsInCarts.map(async (productId) => {
+        const cart = carts.find((c) => c.product_id === productId);
+        const product = await Manager.find(Product, { where: { _id: productId } });
+        if (product) {
+          // Buat objek baru yang mencakup Product dan quantity
+          return {
+            product: product[0],
+            quantity: cart.quantity,
+          };
+        }
+        return null;
       })
     );
 
-    res.status(200).json(respone("[Admin] Success get all product in cart",products))
-  }else {
-    const carts = await Manager.find(Cart,{
-      where : {
-        user_id : new ObjectId(user._id)
-      }
-    })
-    if(!carts) return res.status(404).json(errorRespone("Cart not found"))
-    const  userIdsInCarts = carts.map((cart)=> cart.product_id)
+    // Hapus produk yang bernilai null (tidak ditemukan)
+    const filteredProducts = productsWithQuantity.filter((product) => product !== null);
 
-    const products = await Promise.all(
-    userIdsInCarts.map(async (userId) => {
-      const product = await Manager.find(Product, { where: { _id: userId } });
-      return product;
+    res.status(200).json(respone("[Admin] Success get all product in cart", filteredProducts));
+  } else {
+    const carts = await Manager.find(Cart, {
+      where: {
+        user_id: new ObjectId(user._id),
+      },
+    });
+    if (!carts) return res.status(404).json(errorRespone("Cart not found"));
+    const userIdsInCarts = carts.map((cart) => cart.product_id);
+
+    const productsWithQuantity = await Promise.all(
+      userIdsInCarts.map(async (productId) => {
+        const cart = carts.find((c) => c.product_id === productId);
+        const product = await Manager.find(Product, { where: { _id: productId } });
+        if (product) {
+          return {
+            product: product[0],
+            quantity: cart.quantity,
+          };
+        }
+        return null;
       })
     );
 
-    res.status(200).json(respone("[User] Success get all product in cart",products))
+    const filteredProducts = productsWithQuantity.filter((product) => product !== null);
+
+    res.status(200).json(respone("[User] Success get all product in cart", filteredProducts));
   }
-}
+};
 
 export const createCart = async (req: any, res: any) => {
   
