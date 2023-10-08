@@ -56,19 +56,11 @@ export const getSingleProduct = async (req:Request,res:Response) => {
   const user = await Manager.findOneBy(User,{refresh_token : refresh_token});
   if(!user) return res.status(404).json(errorRespone("User not found"));
   
-  if(req.role === "Admin"){
     const product = await Manager.findOneBy(Product,{_id : new ObjectId(id)});
     if(!product) return res.status(404).json(errorRespone(`Product with id ${id} not found`))
-    res.status(200).json(respone("[Admin] Success get product",product))
-  }else {
-    const product = await Manager.findOneBy(Product,{
-        _id : new ObjectId(id),
-        user_id : new ObjectId(user._id)
-    })
-    if(!product) return res.status(404).json(errorRespone(`Product with id ${id} not found`))
-    res.status(200).json(respone("[User] Success get product",product))
+    res.status(200).json(respone(`Success get product`,product))
   }
-}
+
 
 export const createProduct = async(req:Request,res:Response) => {
   const refresh_token = req.cookies.refresh_token;

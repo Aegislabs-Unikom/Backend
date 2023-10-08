@@ -7,6 +7,7 @@ import { User } from "../entity/User.entity";
 import { ObjectId } from "mongodb";
 import { Manager } from "../data-source";
 import { respone,errorRespone } from "../utils/Response";
+import { processPayment } from "./payment.controller";
 
 export const checkout = async (req: Request, res: Response) => {
   try {
@@ -34,9 +35,11 @@ export const checkout = async (req: Request, res: Response) => {
         const subtotal = product.price * cartItem.quantity;
         totalAmount += subtotal;
         const productFragment = {
+          _id : product._id,
           nama : product.nama_produk,
           description : product.description,
           price : product.price,
+          quantity : cartItem.quantity,
           stock : product.stock,
           image : product.image,
           category : category.nama_category,
@@ -47,22 +50,27 @@ export const checkout = async (req: Request, res: Response) => {
 
 
     const order = new Order({
+      _id :  new ObjectId(),
       products: products,
       status: 'pending',
-      total_amount: totalAmount, 
+      total_amount:  totalAmount, 
       user_id: new ObjectId(user._id),
       createdAt: new Date(),
       updatedAt: new Date(),
     })
 
-    for(const cartItem of cartItems){
-      await Manager.delete(Cart, {_id: cartItem._id});
-    }
+    // for(const cartItem of cartItems){
+    //   await Manager.delete(Cart, {_id: cartItem._id});
+    // }
 
-   
+       
     await Manager.save(order);
 
-    return res.status(200).json(respone('Success checkout', order));
+    await processPayment(order,products,user,req,res);
+
+
+
+    // return res.status(200).json(respone('Success checkout', order));
   } catch (error) {
     console.error(error);
     return res.status(500).json(errorRespone(error.message));

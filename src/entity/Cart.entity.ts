@@ -12,10 +12,10 @@ export class Cart {
   @Column('text')
   product_id?: ObjectId;
 
-  @Column()
+  @Column('int')
   quantity : number;
   
-  @Column()
+  @Column('int')
   amount : number;
 
   @Column()
