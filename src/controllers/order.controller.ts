@@ -52,30 +52,49 @@ export const checkout = async (req: Request, res: Response) => {
     const order = new Order({
       _id :  new ObjectId(),
       products: products,
-      status: 'pending',
+      status: 'Pending',
       total_amount:  totalAmount, 
       user_id: new ObjectId(user._id),
       createdAt: new Date(),
       updatedAt: new Date(),
     })
 
-    // for(const cartItem of cartItems){
-    //   await Manager.delete(Cart, {_id: cartItem._id});
-    // }
-
-       
     await Manager.save(order);
 
     await processPayment(order,products,user,req,res);
 
 
-
-    // return res.status(200).json(respone('Success checkout', order));
   } catch (error) {
     console.error(error);
     return res.status(500).json(errorRespone(error.message));
   }
 };
+
+export const statusCheckout = async (req: Request, res: Response) => {
+   const {status} = req.body;
+   
+   const user = await Manager.findOneBy(User, { refresh_token: req.cookies.refresh_token });
+    if (!user) {
+      return res.status(401).json({ message: 'Login first, cookies not found' });
+    }
+
+    const order = await Manager.findOneBy(Order, { user_id : new ObjectId(user._id) });
+    await Manager.update(Order, {_id : new ObjectId(order._id)}, {status : status});
+
+    const cartItems = await Manager.find(Cart, {
+      where: {
+        user_id: new ObjectId(user._id),
+      },
+    });
+
+    if(status == "Success"){
+      for (const cartItem of cartItems) {
+        await Manager.delete(Cart, {_id: new ObjectId(cartItem._id)});
+      }
+    }
+
+    res.status(200).json(respone("Success checkout", order));
+}
 
 export const getAllOrderByUser = async (req: Request, res: Response) => {
   const user = await Manager.findOneBy(User, { refresh_token: req.cookies.refresh_token });
