@@ -98,3 +98,14 @@ export const createCart = async (req: any, res: any) => {
   }
 
 }
+
+export const deleteCartById = async (req: any, res: any) => {
+  const {id} = req.params;
+  try {
+    const product = await Manager.delete(Cart, {_id : new ObjectId(id)});
+    if(!product) return res.status(404).json(errorRespone(`Cart with id ${id} not found`));
+    res.status(200).json(respone("Success delete cart",product))
+  } catch (error) {
+    if(error) return res.status(500).json(errorRespone(error.message))
+  }
+}

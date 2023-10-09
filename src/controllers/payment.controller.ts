@@ -40,12 +40,17 @@ export const processPayment = async (order:any, products:any[], users:any , req 
     };
 
     snap.createTransaction(parameter).then((transaction: any) => {
-      const dataPayment = {
-        response: JSON.stringify(transaction),
-      };
+      const dataPayment = JSON.stringify(transaction);
       let transactionToken = transaction.token;
-      res.status(200).json({msg : "Success Payment", dataPayment, token : transactionToken});
+      let redirectURL = transaction.redirect_url;
+      res.status(200).json({
+        msg: "Success Payment",
+        token: transactionToken,
+        redirectURL,
+      });
     });
+
+   
   } catch (error) {
     if (error) return res.status(500).json(errorRespone(error.message));
   }
