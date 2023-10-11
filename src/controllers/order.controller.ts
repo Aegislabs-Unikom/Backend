@@ -10,6 +10,8 @@ import { respone,errorRespone } from "../utils/Response";
 import { processPayment } from "./payment.controller";
 
 export const checkout = async (req: Request, res: Response) => {
+  const ongkir = parseInt(req.body.ongkir) || 0;
+  
   try {
     const user = await Manager.findOneBy(User, { refresh_token: req.cookies.refresh_token });
     if (!user) {
@@ -53,7 +55,7 @@ export const checkout = async (req: Request, res: Response) => {
       _id :  new ObjectId(),
       products: products,
       status: 'Pending',
-      total_amount:  totalAmount, 
+      total_amount:  totalAmount + ongkir, 
       user_id: new ObjectId(user._id),
       createdAt: new Date(),
       updatedAt: new Date(),
