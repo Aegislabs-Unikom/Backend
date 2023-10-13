@@ -27,7 +27,6 @@ export const processPayment = async (order:any, products:any[], users:any , req 
         order_id: order._id,
         gross_amount: order.total_amount,
       },
-      item_details: products_detail,
       customer_details: {
       "first_name": users.nama,
       "email": users.email,
