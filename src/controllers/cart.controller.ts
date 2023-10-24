@@ -32,7 +32,6 @@ export const getAllCart = async (req: any, res: any) => {
       })
     );
 
-    // Hapus produk yang bernilai null (tidak ditemukan)
     const filteredProducts = productsWithQuantity.filter((product) => product !== null);
 
     res.status(200).json(respone("[Admin] Success get all product in cart", filteredProducts));
@@ -51,6 +50,7 @@ export const getAllCart = async (req: any, res: any) => {
         const product = await Manager.find(Product, { where: { _id: productId } });
         if (product) {
           return {
+            cart_id : cart._id,
             product: product[0],
             quantity: cart.quantity,
           };
