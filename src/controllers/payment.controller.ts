@@ -44,6 +44,7 @@ export const processPayment = async (order:any, products:any[], users:any , req 
       let redirectURL = transaction.redirect_url;
       res.status(200).json({
         msg: "Success Payment",
+        order_id : order._id,
         token: transactionToken,
         redirectURL,
       });
