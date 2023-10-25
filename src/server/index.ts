@@ -16,16 +16,18 @@ const server = http.createServer(app);
 app.use(cors({
   origin: "http://localhost:3000",
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With', 'X-Access-Token', 'X-Key', 'Cookies', 'Cache-Control', 'Set-Cookie', ],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With', 'X-Access-Token', 'X-Key', 'Cookies', 'Cache-Control', 'Set-Cookie',],
   credentials: true
 }));
 
+app.options('*', cors());
+
 
 app.use(session({
-  secret: 'thisismysecrctekeyfhrgfgrfrty84fwir767', 
+  secret: 'thisismysecrctekeyfhrgfgrfrty84fwir767',
   resave: false,
   saveUninitialized: false,
-  proxy : true
+  proxy: true
 }));
 
 app.use(cookieParser());
