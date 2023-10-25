@@ -73,14 +73,14 @@ export const checkout = async (req: Request, res: Response) => {
 };
 
 export const statusCheckout = async (req: Request, res: Response) => {
-   const {status} = req.body;
+   const {status,order_id} = req.body;
    
    const user = await Manager.findOneBy(User, { refresh_token: req.cookies.refresh_token });
     if (!user) {
       return res.status(401).json({ message: 'Login first, cookies not found' });
     }
 
-    const order = await Manager.findOneBy(Order, { user_id : new ObjectId(user._id) });
+    const order = await Manager.findOneBy(Order, { _id : new ObjectId(order_id)});
     await Manager.update(Order, {_id : new ObjectId(order._id)}, {status : status});
 
     const cartItems = await Manager.find(Cart, {
