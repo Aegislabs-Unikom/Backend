@@ -4,7 +4,7 @@ import { verifyUser } from "../../middleware/AuthUser";
 import multerUploads from "../../utils/Multer";
 const router = Router();
 
-router.get("/",verifyUser, getAllProduct);
+router.get("/",getAllProduct);
 router.get("/byuser",verifyUser,getAllProductByUser);
 router.post("/",verifyUser,multerUploads.single("images"),createProduct);
 router.get("/:id",verifyUser,getSingleProduct);

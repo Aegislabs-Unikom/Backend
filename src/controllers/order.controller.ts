@@ -99,23 +99,81 @@ export const statusCheckout = async (req: Request, res: Response) => {
 }
 
 export const getAllOrderByUser = async (req: Request, res: Response) => {
-  const user = await Manager.findOneBy(User, { refresh_token: req.cookies.refresh_token });
-   if (!user) {
+  try {
+    const user = await Manager.findOneBy(User, { refresh_token: req.cookies.refresh_token });
+    if (!user) {
       return res.status(401).json({ message: 'Login first, cookies not found' });
     }
-  if(req.role === "Admin") {
-    const orders = await Manager.find(Order);
-    if(!orders) return res.status(404).json(errorRespone("Orders not found"))
-    return res.status(200).json(respone("[Admin] Success get all orders", orders));
-  } else {
-    const orders = await Manager.find(Order, {
-      where: {
-        user_id: new ObjectId(user._id),
-      },
-    });
-    return res.status(200).json(respone("[User] Success get all orders", orders));
+    
+    if (req.role === "Admin") {
+      const orders = await Manager.find(Order);
+      if (!orders) return res.status(404).json(errorRespone("Orders not found"));
+
+      const ordersWithProducts = await Promise.all(orders.map(async (order) => {
+        const products = await Promise.all(order.products.map(async (product) => {
+          const productDetails = await Manager.find(Product, { where : { _id: new ObjectId(product._id)} });
+          if (productDetails) {
+            return {
+              ...product,
+              nama: productDetails[0].nama_produk,
+              description: productDetails[0].description,
+              price: productDetails[0].price,
+              stock: productDetails[0].stock,
+              image: productDetails[0].image,
+              
+            };
+          }
+          return null;
+        }));
+
+        return {
+          ...order,
+          products: products.filter((product) => product !== null),
+        };
+      }));
+
+      return res.status(200).json(respone("[Admin] Success get all orders", ordersWithProducts));
+    } else {
+      const orders = await Manager.find(Order, {
+        where: {
+          user_id: new ObjectId(user._id),
+        },
+      });
+
+      const ordersWithProducts = await Promise.all(orders.map(async (order) => {
+        const products = await Promise.all(order.products.map(async (product) => {
+          const productDetails = await Manager.find(Product, {  where : { _id: new ObjectId(product._id) }});
+          if (productDetails) {
+            return {
+              ...product,
+              nama: productDetails[0].nama_produk,
+              description: productDetails[0].description,
+              price: productDetails[0].price,
+              stock: productDetails[0].stock,
+              image: productDetails[0].image,
+            };
+          }
+          return null;
+        }));
+
+        return {
+          ...order,
+          products: products.filter((product) => product !== null),
+        };
+      }));
+
+      return res.status(200).json(respone("[User] Success get all orders", ordersWithProducts));
+    }
+  } catch (error) {
+    return res.status(500).json(errorRespone("Internal server error"));
   }
 }
+
+
+
+
+
+
 
 export const deleteOrder = async (req: Request, res: Response) => {
   const {id} = req.params;
