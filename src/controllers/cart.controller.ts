@@ -102,9 +102,15 @@ export const createCart = async (req: any, res: any) => {
 export const deleteCartById = async (req: any, res: any) => {
   const {id} = req.params;
   try {
-    const product = await Manager.delete(Cart, {_id : new ObjectId(id)});
-    if(!product) return res.status(404).json(errorRespone(`Cart with id ${id} not found`));
-    res.status(200).json(respone("Success delete cart",product))
+    const cartfind = await Manager.findOneBy(Cart,{_id : new ObjectId(id)});
+    const cart = await Manager.delete(Cart, {_id : new ObjectId(id)});
+    const product = await Manager.findOneBy(Product,{_id : new ObjectId(cartfind.product_id )});
+    product.stock +=  cartfind.quantity;
+
+    await Manager.save(Product,product);
+
+    if(!cart) return res.status(404).json(errorRespone(`Cart with id ${id} not found`));
+    res.status(200).json(respone("Success delete cart",cart))
   } catch (error) {
     if(error) return res.status(500).json(errorRespone(error.message))
   }
